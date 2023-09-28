@@ -23,6 +23,7 @@ apt_install() {
 }
 
 apt_install curl
+apt_install zip
 
 # 检测是否已经安装了geoiplookup
 if ! command -v geoiplookup &> /dev/null; then
@@ -151,7 +152,19 @@ echo "正在将IP按国家代码保存到ip文件夹内..."
 		echo $ip >> "ip/${country_code}-443.txt"  # 写入对应的国家文件
     done < CloudFlareIP.txt
 
-    echo "IP已按国家分类保存到ip文件夹内。"
+# 检测ip.zip文件是否存在，如果存在就删除
+if [ -f "ip.zip" ]; then
+  rm -f ip.zip
+fi
+
+# 将当前目录下的ip文件夹内的所有文件打包成ip.zip
+if [ -d "ip" ]; then
+  zip -r ip.zip ip/
+  echo "CloudFlareIPScan Packaging ip.zip Completed!"
+else
+  echo "CloudFlareIPScan Completed!"
+fi
+
 else
     echo "CloudFlareIP.txt文件不存在，脚本终止。"
     exit 1
