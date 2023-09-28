@@ -101,25 +101,32 @@ fi
 python3 TestCloudFlareIP.py
 }
 
-if [ -e "ip.txt" ]; then
-    echo "开始整理IP文件库"
-    
-    # 删除temp文件夹内的所有文件
-    rm -f temp/*
+# 定义ASN文件夹的路径
+asnfolder="./ASN"
 
-    # 检查ip.txt是否为空行，并将每行内容作为ips参数传递给process_ip.py
-    while IFS= read -r line; do
-        if [ -n "$line" ]; then
-	    echo "Scan $line"
-            python3 process_ip.py "$line"
-	    gogogo
-        fi
-    done < "ip.txt"
+# 检查ASN文件夹是否存在
+if [ -d "$asnfolder" ]; then
+  # 获取ASN文件夹中的所有txt文件并将它们存储到数组中
+  txtfiles=("$asnfolder"/*.txt)
 
-    echo "ip库全部处理完成"
+  # 检查是否存在txt文件
+  if [ ${#txtfiles[@]} -gt 0 ]; then
+    # 遍历txt文件数组并将文件名作为参数传递给python3脚本
+    for txtfile in "${txtfiles[@]}"; do
+      # 提取文件名并去掉路径部分
+      asnname=$(basename "$txtfile")
+	  rm -f temp/*
+	  echo "ScanASN: $asnname"
+      python3 process_ip.py "$asnname"
+	  gogogo
+    done
+  else
+    echo "ASN文件夹中没有txt文件。"
+	exit 1  # 退出脚本，1 表示出现了错误
+  fi
 else
-    echo "ip.txt 文件不存在，脚本结束。"
-    exit 1  # 退出脚本，1 表示出现了错误
+  echo "ASN文件夹不存在。"
+  exit 1  # 退出脚本，1 表示出现了错误
 fi
 
 # 检查CloudFlareIP.txt文件是否存在
