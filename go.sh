@@ -31,8 +31,6 @@ if ! command -v geoiplookup &> /dev/null; then
     apt_update
     sudo apt install geoip-bin -y
     echo "geoiplookup 安装完成！"
-else
-    # echo "geoiplookup ok."
 fi
 
 # 检测GeoLite2-Country.mmdb文件是否存在
