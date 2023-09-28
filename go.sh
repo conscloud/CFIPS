@@ -1,6 +1,7 @@
 #!/bin/bash
 ###############################################################以下脚本内容，勿动#######################################################################
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
+Threads=1024 #线程数
 
 # 检测temp文件夹是否存在
 if [ ! -d "temp" ]; then
@@ -21,7 +22,7 @@ fi
 
 if [ -e "temp/ip0.txt" ]; then
     echo "扫描IP文件库80端口开始..."
-    ./Pscan -F temp/ip0.txt -P 80 -T 128 -O temp/d80.txt -timeout 1s > /dev/null 2>&1
+    ./Pscan -F temp/ip0.txt -P 80 -T $Threads -O temp/d80.txt -timeout 1s > /dev/null 2>&1
 else
     echo "无有效IP内容，脚本终止。请重新编写ip.txt文件"
     exit 1  # 终止脚本，1 表示出现了错误
@@ -37,7 +38,7 @@ fi
 
 if [ -e "temp/80.txt" ]; then
     echo "扫描IP文件库443端口开始..."
-    ./Pscan -F temp/80.txt -P 443 -T 128 -O temp/d443.txt -timeout 1s > /dev/null 2>&1
+    ./Pscan -F temp/80.txt -P 443 -T $Threads -O temp/d443.txt -timeout 1s > /dev/null 2>&1
 else
     echo "无IP开启443端口，脚本终止。请增加ip.txt文件内IP数"
     exit 1  # 终止脚本，1 表示出现了错误
