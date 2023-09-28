@@ -16,12 +16,12 @@ def test_ip(ip):
                     cf_file.write(f"{ip}\n")
             break  # 如果测试成功，退出循环
         except Exception as e:
-            print(f"IP {ip} 第 {retries + 1} 次测试出错: {str(e)}")
+            # print(f"IP {ip} 第 {retries + 1} 次测试出错: {str(e)}")
             retries += 1
     else:
-        print(f"IP {ip} 测试失败，已尝试 {max_retries} 次。")
+        # print(f"IP {ip} 测试失败，已尝试 {max_retries} 次。")
 
-print("开始测试。")
+#print("开始测试。")
 
 # 使用多线程执行测试
 with ThreadPoolExecutor(max_workers=128) as executor:  # 这里设置线程池的最大线程数
@@ -29,4 +29,4 @@ with ThreadPoolExecutor(max_workers=128) as executor:  # 这里设置线程池�
         ips = [ip.strip() for ip in ip_file]
         executor.map(test_ip, ips)
 
-print("测试完成。Cloudflare IP 地址已写入 CloudFlareIP.txt 文件。")
+#print("测试完成。Cloudflare IP 地址已写入 CloudFlareIP.txt 文件。")
