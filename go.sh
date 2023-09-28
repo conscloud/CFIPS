@@ -54,6 +54,11 @@ if [ ! -f "/usr/share/GeoIP/GeoLite2-Country.mmdb" ]; then
     fi
 fi
 
+if [ -e CloudFlareIP.txt ]; then
+  echo "清理旧的CloudFlareIP.txt文件."
+  rm -f CloudFlareIP.txt
+fi
+
 # 检测temp文件夹是否存在
 if [ ! -d "temp" ]; then
     echo "temp文件夹不存在，正在创建..."
@@ -63,18 +68,7 @@ else
     rm -f temp/*  # 删除temp文件夹内的所有文件
 fi
 
-if [ -e CloudFlareIP.txt ]; then
-  rm CloudFlareIP.txt
-fi
-
-if [ -e "ip.txt" ]; then
-    echo "开始整理IP文件库"
-    python3 process_ip.py
-else
-    echo "ip.txt 文件不存在，脚本结束。"
-    exit 1  # 退出脚本，1 表示出现了错误
-fi
-
+gogogo(){
 if [ -e "temp/ip0.txt" ]; then
     echo "扫描IP文件库80端口开始..."
     ./Pscan -F temp/ip0.txt -P 80 -T $Threads -O temp/d80.txt -timeout 1s > /dev/null 2>&1
@@ -109,6 +103,27 @@ fi
 
 echo "开始验证CloudFlareIP"
 python3 TestCloudFlareIP.py
+}
+
+if [ -e "ip.txt" ]; then
+    echo "开始整理IP文件库"
+    
+    # 删除temp文件夹内的所有文件
+    rm -f temp/*
+
+    # 检查ip.txt是否为空行，并将每行内容作为ips参数传递给process_ip.py
+    while IFS= read -r line; do
+        if [ -n "$line" ]; then
+            python3 process_ip.py "$line"
+	    gogogo
+        fi
+    done < "ip.txt"
+
+    echo "ip库全部处理完成"
+else
+    echo "ip.txt 文件不存在，脚本结束。"
+    exit 1  # 退出脚本，1 表示出现了错误
+fi
 
 # 检查CloudFlareIP.txt文件是否存在
 if [ -f "CloudFlareIP.txt" ]; then
