@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 # 读取ip.txt中的每个IP地址并执行测试
 def test_ip(ip):
-    max_retries = 3
+    max_retries = 2
     retries = 0
     while retries < max_retries:
         try:
