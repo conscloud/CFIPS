@@ -1,10 +1,6 @@
 import requests
 from concurrent.futures import ThreadPoolExecutor
 
-# 清空 CloudFlareIP.txt 文件（如果存在）
-with open('CloudFlareIP.txt', 'w') as cf_file:
-    cf_file.write('')
-
 # 读取ip.txt中的每个IP地址并执行测试
 def test_ip(ip):
     max_retries = 3
