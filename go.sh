@@ -3,6 +3,57 @@
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
 Threads=1024 #线程数
 
+update_gengxinzhi=0
+apt_update() {
+    if [ "$update_gengxinzhi" -eq 0 ]; then
+        sudo apt update
+        update_gengxinzhi=$((update_gengxinzhi + 1))
+    fi
+}
+
+# 检测并安装软件函数
+apt_install() {
+    if ! command -v "$1" &> /dev/null; then
+        echo "$1 未安装，开始安装..."
+        apt_update
+        sudo apt install "$1" -y
+        echo "$1 安装完成！"
+    fi
+}
+
+# 检测并安装 Git、Curl、unzip 和 awk
+apt_install git
+apt_install curl
+apt_install unzip
+apt_install awk
+apt_install jq
+
+# 检测是否已经安装了geoiplookup
+if ! command -v geoiplookup &> /dev/null; then
+    echo "geoiplookup 未安装，开始安装..."
+    update_gengxin
+    sudo apt install geoip-bin -y
+    echo "geoiplookup 安装完成！"
+else
+    echo "geoiplookup 已安装."
+fi
+
+# 检测GeoLite2-Country.mmdb文件是否存在
+if [ ! -f "/usr/share/GeoIP/GeoLite2-Country.mmdb" ]; then
+    echo "文件 /usr/share/GeoIP/GeoLite2-Country.mmdb 不存在。正在下载..."
+    
+    # 使用curl命令下载文件
+    curl -L -o /usr/share/GeoIP/GeoLite2-Country.mmdb "${proxygithub}https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
+    
+    # 检查下载是否成功
+    if [ $? -eq 0 ]; then
+        echo "下载完成。"
+    else
+        echo "下载失败。脚本终止。"
+        exit 1
+    fi
+fi
+
 # 检测temp文件夹是否存在
 if [ ! -d "temp" ]; then
     echo "temp文件夹不存在，正在创建..."
@@ -54,3 +105,31 @@ fi
 
 echo "开始验证CloudFlareIP"
 python3 TestCloudFlareIP.py
+
+# 检查CloudFlareIP.txt文件是否存在
+if [ -f "CloudFlareIP.txt" ]; then
+
+	# 检测ip文件夹是否存在
+	if [ -d "ip" ]; then
+		echo "开始清理IP地区文件"
+		rm -f ip/*
+		echo "清理IP地区文件完成。"
+	else
+		echo "创建IP地区文件。"
+		mkdir -p ip
+	fi
+
+echo "正在将IP按国家代码保存到ip文件夹内..."
+    # 逐行处理CloudFlareIP.txt文件
+    while read -r line; do
+        ip=$(echo $line | cut -d ' ' -f 1)  # 提取IP地址部分
+		result=$(mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip $ip country iso_code)
+		country_code=$(echo $result | awk -F '"' '{print $2}')
+		echo $ip >> "ip/${country_code}-443.txt"  # 写入对应的国家文件
+    done < CloudFlareIP.txt
+
+    echo "IP已按国家分类保存到ip文件夹内。"
+else
+    echo "CloudFlareIP.txt文件不存在，脚本终止。"
+    exit 1
+fi
