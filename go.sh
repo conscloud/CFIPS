@@ -21,12 +21,7 @@ apt_install() {
     fi
 }
 
-# 检测并安装 Git、Curl、unzip 和 awk
-apt_install git
 apt_install curl
-apt_install unzip
-apt_install awk
-apt_install jq
 
 # 检测是否已经安装了geoiplookup
 if ! command -v geoiplookup &> /dev/null; then
@@ -114,6 +109,7 @@ if [ -e "ip.txt" ]; then
     # 检查ip.txt是否为空行，并将每行内容作为ips参数传递给process_ip.py
     while IFS= read -r line; do
         if [ -n "$line" ]; then
+	    echo "开始检测 $line"
             python3 process_ip.py "$line"
 	    gogogo
         fi
