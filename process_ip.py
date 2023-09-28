@@ -1,3 +1,4 @@
+import sys
 import ipaddress
 
 # 清空或创建ip0.txt文件
@@ -11,16 +12,13 @@ def expand_cidr(cidr):
         for ip in ip_range:
             output_file.write(str(ip) + "\n")
 
-# 读取ip.txt文件的每一行
-with open("ip.txt", "r") as input_file:
-    for line in input_file:
-        line = line.strip()
-        # 判断行是否包含IP段
-        if "/" in line:
-            expand_cidr(line)
-        else:
-            # 直接将IP追加到ip0.txt
-            with open("temp/ip0.txt", "a") as output_file:
-                output_file.write(line + "\n")
+# 检查是否有命令行参数
+if len(sys.argv) != 2:
+    print("请提供一个CIDR格式的IP段作为参数")
+    sys.exit(1)
+
+# 获取命令行参数并展开
+cidr_argument = sys.argv[1]
+expand_cidr(cidr_argument)
 
 print("处理完成，结果保存在temp/ip0.txt中")
