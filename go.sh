@@ -31,7 +31,7 @@ apt_install jq
 # 检测是否已经安装了geoiplookup
 if ! command -v geoiplookup &> /dev/null; then
     echo "geoiplookup 未安装，开始安装..."
-    update_gengxin
+    apt_update
     sudo apt install geoip-bin -y
     echo "geoiplookup 安装完成！"
 else
