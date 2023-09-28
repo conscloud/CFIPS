@@ -31,7 +31,7 @@ if ! command -v geoiplookup &> /dev/null; then
     sudo apt install geoip-bin -y
     echo "geoiplookup 安装完成！"
 else
-    echo "geoiplookup 已安装."
+    echo "geoiplookup ok."
 fi
 
 # 检测GeoLite2-Country.mmdb文件是否存在
@@ -51,16 +51,16 @@ if [ ! -f "/usr/share/GeoIP/GeoLite2-Country.mmdb" ]; then
 fi
 
 if [ -e CloudFlareIP.txt ]; then
-  echo "清理旧的CloudFlareIP.txt文件."
+  #echo "清理旧的CloudFlareIP.txt文件."
   rm -f CloudFlareIP.txt
 fi
 
 # 检测temp文件夹是否存在
 if [ ! -d "temp" ]; then
-    echo "temp文件夹不存在，正在创建..."
+    #echo "temp文件夹不存在，正在创建..."
     mkdir temp
 else
-    echo "temp文件夹已存在，正在删除文件..."
+    #echo "temp文件夹已存在，正在删除文件..."
     rm -f temp/*  # 删除temp文件夹内的所有文件
 fi
 
@@ -110,7 +110,7 @@ if [ -e "ip.txt" ]; then
     # 检查ip.txt是否为空行，并将每行内容作为ips参数传递给process_ip.py
     while IFS= read -r line; do
         if [ -n "$line" ]; then
-	    echo "开始检测 $line"
+	    echo "Scan $line"
             python3 process_ip.py "$line"
 	    gogogo
         fi
