@@ -63,6 +63,10 @@ else
     rm -f temp/*  # 删除temp文件夹内的所有文件
 fi
 
+if [ -e CloudFlareIP.txt ]; then
+  rm CloudFlareIP.txt
+fi
+
 if [ -e "ip.txt" ]; then
     echo "开始整理IP文件库"
     python3 process_ip.py
