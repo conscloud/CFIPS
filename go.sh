@@ -32,7 +32,7 @@ if ! command -v geoiplookup &> /dev/null; then
     sudo apt install geoip-bin -y
     echo "geoiplookup 安装完成！"
 else
-    echo "geoiplookup ok."
+    # echo "geoiplookup ok."
 fi
 
 # 检测GeoLite2-Country.mmdb文件是否存在
@@ -113,17 +113,18 @@ if [ -d "$asnfolder" ]; then
   # 检查是否存在txt文件
   if [ ${#txtfiles[@]} -gt 0 ]; then
     # 遍历txt文件数组并将文件名作为参数传递给python3脚本
+    echo "CloudFlareIPScan Starts."
     for txtfile in "${txtfiles[@]}"; do
       # 提取文件名并去掉路径部分
       asnname=$(basename "$txtfile")
-	  rm -f temp/*
-	  echo "ScanASN: $asnname"
+      rm -f temp/*
+      echo "ScanASN: $asnname"
       python3 process_ip.py "$asnname"
-	  gogogo
+      gogogo
     done
   else
     echo "ASN文件夹中没有txt文件。"
-	exit 1  # 退出脚本，1 表示出现了错误
+    exit 1  # 退出脚本，1 表示出现了错误
   fi
 else
   echo "ASN文件夹不存在。"
