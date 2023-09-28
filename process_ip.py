@@ -21,4 +21,4 @@ if len(sys.argv) != 2:
 cidr_argument = sys.argv[1]
 expand_cidr(cidr_argument)
 
-print("处理完成，结果保存在temp/ip0.txt中")
+# print("处理完成，结果保存在temp/ip0.txt中")
