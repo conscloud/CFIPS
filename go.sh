@@ -1,11 +1,13 @@
 #!/bin/bash
 export LANG=zh_CN.UTF-8
-###############################################################以下脚本内容，勿动#######################################################################
-proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
 HttpPort=80 #必填 不能为空
 HttpsPort=443 #必填 不能为空
-Threads=1024 #线程数
+Threads=1024 #端口扫描线程数
+lines_per_batch=16 #每次读取ip段的行数,避免机器内存不足数据溢出
+###############################################################以下脚本内容，勿动#######################################################################
+proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
 
+current_line=1
 update_gengxinzhi=0
 apt_update() {
     if [ "$update_gengxinzhi" -eq 0 ]; then
@@ -106,11 +108,31 @@ if [ -d "$asnfolder" ]; then
     echo "CloudFlareIPScan Starts."
     for txtfile in "${txtfiles[@]}"; do
       # 提取文件名并去掉路径部分
-      asnname=$(basename "$txtfile")
-      rm -f temp/*
-      echo "ScanASN: $asnname"
-      python3 process_ip.py "$asnname"
-      gogogo
+	  asnname=$(basename "$txtfile")
+	  echo "ScanASN: $asnname"
+	  
+		while IFS= read -r line; do
+			echo "$line" >> ip.txt
+			current_line=$((current_line + 1))
+
+			if [ "$current_line" -eq "$lines_per_batch" ]; then
+				rm -f temp/*
+				python3 process_ip.py
+				gogogo
+				current_line=0
+				> ip.txt  # 清空ip.txt文件的内容
+			fi
+		done < "$txtfile"
+
+		# 处理剩余行数（少于16行的情况）
+		if [ "$current_line" -gt 0 ]; then
+			rm -f temp/*
+			python3 process_ip.py
+			gogogo
+			> ip.txt  # 清空ip.txt文件的内容
+		fi
+
+	  
     done
   else
     echo "ASN文件夹中没有txt文件。"
