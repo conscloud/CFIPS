@@ -69,33 +69,50 @@ fi
 
 gogogo(){
 if [ -e "temp/ip0.txt" ]; then
-    #echo "扫描IP文件库http端口开始..."
+    echo "Scan HttpPort..."
     ./Pscan -F temp/ip0.txt -P ${HttpPort} -T ${Threads} -O "temp/d${HttpPort}.txt" -timeout 1s > /dev/null 2>&1
 fi
 
 if [ -e "temp/d${HttpPort}.txt" ]; then
-    #echo "扫描IP文件库http端口完成."
+    echo "Scan HttpPort Completed."
     awk 'NF' "temp/d${HttpPort}.txt" | sed 's/:${HttpPort}$//' >> "temp/${HttpPort}.txt"
 fi
 
 if [ -e "temp/${HttpPort}.txt" ]; then
-    #echo "扫描IP文件库https端口开始..."
+    echo "Scan HttpsPort..."
     ./Pscan -F "temp/${HttpPort}.txt" -P ${HttpsPort} -T ${Threads} -O "temp/d${HttpsPort}.txt" -timeout 1s > /dev/null 2>&1
 fi
 
 if [ -e "temp/d${HttpsPort}.txt" ]; then
-    #echo "扫描IP文件库https端口完成."
+    echo "Scan HttpsPort Completed."
     awk 'NF' "temp/d${HttpsPort}.txt" | sed 's/:${HttpsPort}$//' >> "temp/${HttpsPort}.txt"
 fi
 
 if [ -e "temp/${HttpsPort}.txt" ]; then
-    #echo "开始验证CloudFlareIP"
+    echo "Test CloudFlareIP"
     python3 TestCloudFlareIP.py
 fi
 }
 
 # 定义ASN文件夹的路径
 asnfolder="./ASN"
+# 检测ASN文件夹是否存在
+if [ ! -d "$asnfolder" ]; then
+    # 如果ASN文件夹不存在，就在当前目录下创建它
+    mkdir "$asnfolder"
+fi
+
+# 检测ASN文件夹下是否存在txt文件
+if ls "$asnfolder"/*.txt 1> /dev/null 2>&1; then
+    echo "ASN Ready."
+else
+    echo "Download ASN.zip"
+    # 如果txt文件不存在，使用curl下载ASN.zip
+    curl -L -o ASN.zip "${proxygithub}https://raw.githubusercontent.com/cmliu/CFIPS/main/ASN.zip"
+    # 解压ASN.zip到ASN文件夹
+    unzip -q ASN.zip -d "$asnfolder"
+    echo "ASN Ready."
+fi
 
 # 检查ASN文件夹是否存在
 if [ -d "$asnfolder" ]; then
@@ -114,7 +131,7 @@ if [ -d "$asnfolder" ]; then
 		while IFS= read -r line; do
 			echo "$line" >> ip.txt
 			current_line=$((current_line + 1))
-
+			echo "Scan CIDR $line"
 			if [ "$current_line" -eq "$lines_per_batch" ]; then
 				rm -f temp/*
 				python3 process_ip.py
@@ -132,7 +149,6 @@ if [ -d "$asnfolder" ]; then
 			> ip.txt  # 清空ip.txt文件的内容
 		fi
 
-	  
     done
   else
     echo "ASN文件夹中没有txt文件。"
