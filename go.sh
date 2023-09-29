@@ -1,14 +1,25 @@
 #!/bin/bash
 export LANG=zh_CN.UTF-8
-Threads=2048 #端口扫描线程数
-lines_per_batch=32 #每次读取ip段的行数,避免机器内存不足数据溢出
-###############################################################以下脚本内容，勿动#######################################################################
+perf=1 # 机器性能倍率，爆内存就调低，跑不满机器就调高，默认1
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
+###############################################################以下脚本内容，勿动#######################################################################
+mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
+# 计算系数，向上取整
+coeff=$(awk -v mem="$mem" -v perf="$perf" 'BEGIN { coeff=int((mem + 511) * perf / 512); if ((mem + 511) * perf % 512 > 0) coeff++; print coeff }')
+Threads=$((coeff * 384)) # 端口扫描线程数
+lines_per_batch=$((coeff * 4)) # 每次读取ip段的行数,避免机器内存不足数据溢出
+if [ "$mem" -gt 1024 ]; then
+    TestCFIPDet=3 #验证次数
+else
+    TestCFIPDet=2 #验证次数
+fi
+TestCFIPThreads=$((coeff * 8)) #验证线程
 
 log() {
     echo -e "[$(date "+%Y-%m-%d %H:%M:%S")] $1"
 }
 
+log "RAM: ${mem} MB"
 current_line=1
 update_gengxinzhi=0
 apt_update() {
@@ -99,7 +110,7 @@ fi
 
 if [ -e "temp/443.txt" ]; then
     log "Test CloudFlareIP"
-    python3 TestCloudFlareIP.py
+    python3 TestCloudFlareIP.py $TestCFIPDet $TestCFIPThreads
 fi
 }
 
