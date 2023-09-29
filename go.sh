@@ -2,6 +2,8 @@
 export LANG=zh_CN.UTF-8
 ###############################################################以下脚本内容，勿动#######################################################################
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
+HttpPort=80 #必填 不能为空
+HttpsPort=443 #必填 不能为空
 Threads=1024 #线程数
 
 update_gengxinzhi=0
@@ -65,27 +67,29 @@ fi
 
 gogogo(){
 if [ -e "temp/ip0.txt" ]; then
-    #echo "扫描IP文件库80端口开始..."
-    ./Pscan -F temp/ip0.txt -P 80 -T $Threads -O temp/d80.txt -timeout 1s > /dev/null 2>&1
+    #echo "扫描IP文件库http端口开始..."
+    ./Pscan -F temp/ip0.txt -P ${HttpPort} -T ${Threads} -O "temp/d${HttpPort}.txt" -timeout 1s > /dev/null 2>&1
 fi
 
-if [ -e "temp/d80.txt" ]; then
-    #echo "扫描IP文件库80端口完成."
-    awk 'NF' temp/d80.txt | sed 's/:80$//' >> temp/80.txt
+if [ -e "temp/d${HttpPort}.txt" ]; then
+    #echo "扫描IP文件库http端口完成."
+    awk 'NF' "temp/d${HttpPort}.txt" | sed 's/:${HttpPort}$//' >> "temp/${HttpPort}.txt"
 fi
 
-if [ -e "temp/80.txt" ]; then
-    #echo "扫描IP文件库443端口开始..."
-    ./Pscan -F temp/80.txt -P 443 -T $Threads -O temp/d443.txt -timeout 1s > /dev/null 2>&1
+if [ -e "temp/${HttpPort}.txt" ]; then
+    #echo "扫描IP文件库https端口开始..."
+    ./Pscan -F "temp/${HttpPort}.txt" -P ${HttpsPort} -T ${Threads} -O "temp/d${HttpsPort}.txt" -timeout 1s > /dev/null 2>&1
 fi
 
-if [ -e "temp/d443.txt" ]; then
-    #echo "扫描IP文件库443端口完成."
-    awk 'NF' temp/d443.txt | sed 's/:443$//' >> temp/443.txt
+if [ -e "temp/d${HttpsPort}.txt" ]; then
+    #echo "扫描IP文件库https端口完成."
+    awk 'NF' "temp/d${HttpsPort}.txt" | sed 's/:${HttpsPort}$//' >> "temp/${HttpsPort}.txt"
 fi
 
-#echo "开始验证CloudFlareIP"
-python3 TestCloudFlareIP.py
+if [ -e "temp/${HttpsPort}.txt" ]; then
+    #echo "开始验证CloudFlareIP"
+    python3 TestCloudFlareIP.py
+fi
 }
 
 # 定义ASN文件夹的路径
