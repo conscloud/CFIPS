@@ -106,9 +106,13 @@ fi
 if ls "$asnfolder"/*.txt 1> /dev/null 2>&1; then
     echo "ASN Ready."
 else
-    echo "Download ASN.zip"
-    # 如果txt文件不存在，使用curl下载ASN.zip
-    curl -L -o ASN.zip "${proxygithub}https://raw.githubusercontent.com/cmliu/CFIPS/main/ASN.zip"
+    # 判断当前目录下ASN.zip文件是否存在
+    if [ ! -f "ASN.zip" ]; then
+        # 如果ASN.zip文件不存在，使用curl命令下载文件
+	echo "Download ASN.zip"
+        curl -L -o ASN.zip "${proxygithub}https://raw.githubusercontent.com/cmliu/CFIPS/main/ASN.zip"
+    fi
+    echo "unzip ASN.zip"
     # 解压ASN.zip到ASN文件夹
     unzip -q ASN.zip -d "$asnfolder"
     echo "ASN Ready."
