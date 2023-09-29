@@ -162,7 +162,7 @@ echo "正在将IP按国家代码保存到ip文件夹内..."
         ip=$(echo $line | cut -d ' ' -f 1)  # 提取IP地址部分
 		result=$(mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip $ip country iso_code)
 		country_code=$(echo $result | awk -F '"' '{print $2}')
-		echo $ip >> "ip/${country_code}-443.txt"  # 写入对应的国家文件
+		echo $ip >> "ip/${country_code}-${HttpsPort}.txt"  # 写入对应的国家文件
     done < CloudFlareIP.txt
 
 # 检测ip.zip文件是否存在，如果存在就删除
