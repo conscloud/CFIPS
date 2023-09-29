@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 # 读取ip.txt中的每个IP地址并执行测试
 def test_ip(ip):
-    max_retries = 2
+    max_retries = 3
     retries = 0
     while retries < max_retries:
         try:
@@ -22,7 +22,7 @@ def test_ip(ip):
 # print("开始测试。")
 
 # 使用多线程执行测试
-with ThreadPoolExecutor(max_workers=96) as executor:  # 这里设置线程池的最大线程数
+with ThreadPoolExecutor(max_workers=4) as executor:  # 这里设置线程池的最大线程数
     with open('temp/443.txt', 'r') as ip_file:
         ips = [ip.strip() for ip in ip_file]
         executor.map(test_ip, ips)
