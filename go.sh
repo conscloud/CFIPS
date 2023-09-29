@@ -2,7 +2,7 @@
 export LANG=zh_CN.UTF-8
 ###############################################################以下脚本内容，勿动#######################################################################
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
-Threads=2048 #线程数
+Threads=1024 #线程数
 
 update_gengxinzhi=0
 apt_update() {
