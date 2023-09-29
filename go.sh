@@ -130,7 +130,7 @@ if [ -d "$asnfolder" ]; then
     for txtfile in "${txtfiles[@]}"; do
       # 提取文件名并去掉路径部分
 	  asnname=$(basename "$txtfile")
-	  echo "ScanASN: $asnname"
+	  echo "Scan ASN $asnname"
 	  
 		while IFS= read -r line; do
 			echo "$line" >> ip.txt
