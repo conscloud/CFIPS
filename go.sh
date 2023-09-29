@@ -1,7 +1,5 @@
 #!/bin/bash
 export LANG=zh_CN.UTF-8
-#HttpPort=80 #必填 不能为空
-#HttpsPort=443 #必填 不能为空
 Threads=2048 #端口扫描线程数
 lines_per_batch=32 #每次读取ip段的行数,避免机器内存不足数据溢出
 ###############################################################以下脚本内容，勿动#######################################################################
@@ -39,6 +37,13 @@ if ! command -v geoiplookup &> /dev/null; then
     apt_update
     sudo apt install geoip-bin -y
     log "geoiplookup 安装完成！"
+fi
+
+if ! command -v mmdblookup &> /dev/null; then
+    log "mmdblookup 未安装，开始安装..."
+    apt_update
+    sudo apt install mmdb-bin -y
+    log "mmdblookup 安装完成！"
 fi
 
 # 检测GeoLite2-Country.mmdb文件是否存在
