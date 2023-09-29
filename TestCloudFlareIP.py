@@ -1,5 +1,6 @@
 import requests
 from concurrent.futures import ThreadPoolExecutor
+import datetime
 # 读取ip.txt中的每个IP地址并执行测试
 def test_ip(ip):
     max_retries = 3
@@ -10,7 +11,7 @@ def test_ip(ip):
             # print(response.text)
             # 检查是否是301跳转并且Server是cloudflare
             if response.status_code == 301 and 'cloudflare' in response.headers.get('Server', '').lower():
-                print(f"IP {ip} is CloudflareIP.")
+                print(f"{datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} IP {ip} is CloudflareIP.")
                 with open('CloudFlareIP.txt', 'a') as cf_file:
                     cf_file.write(f"{ip}\n")
             break  # 如果测试成功，退出循环
