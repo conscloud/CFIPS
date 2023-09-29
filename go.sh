@@ -21,10 +21,10 @@ apt_update() {
 # 检测并安装软件函数
 apt_install() {
     if ! command -v "$1" &> /dev/null; then
-        log "$1 未安装，开始安装..."
+        log "$1 Not installed, start installation..."
         apt_update
         sudo apt install "$1" -y
-        log "$1 安装完成！"
+        log "$1 The installation is complete!"
     fi
 }
 
@@ -33,31 +33,31 @@ apt_install zip
 
 # 检测是否已经安装了geoiplookup
 if ! command -v geoiplookup &> /dev/null; then
-    log "geoiplookup 未安装，开始安装..."
+    log "geoiplookup Not installed, start installation..."
     apt_update
     sudo apt install geoip-bin -y
-    log "geoiplookup 安装完成！"
+    log "geoiplookup The installation is complete!"
 fi
 
 if ! command -v mmdblookup &> /dev/null; then
-    log "mmdblookup 未安装，开始安装..."
+    log "mmdblookup Not installed, start installation..."
     apt_update
     sudo apt install mmdb-bin -y
-    log "mmdblookup 安装完成！"
+    log "mmdblookup The installation is complete!"
 fi
 
 # 检测GeoLite2-Country.mmdb文件是否存在
 if [ ! -f "/usr/share/GeoIP/GeoLite2-Country.mmdb" ]; then
-    log "文件 /usr/share/GeoIP/GeoLite2-Country.mmdb 不存在。正在下载..."
+    log "The file /usr/share/GeoIP/GeoLite2-Country.mmdb does not exist. downloading..."
     
     # 使用curl命令下载文件
     curl -L -o /usr/share/GeoIP/GeoLite2-Country.mmdb "${proxygithub}https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
     
     # 检查下载是否成功
     if [ $? -eq 0 ]; then
-        log "下载完成。"
+        log "Download completed."
     else
-        log "下载失败。脚本终止。"
+        log "Download failed. The script terminates."
         exit 1
     fi
 fi
@@ -164,11 +164,11 @@ if [ -d "$asnfolder" ]; then
 
     done
   else
-    log "ASN文件夹中没有txt文件。"
+    log "There is no txt file in the ASN folder."
     exit 1  # 退出脚本，1 表示出现了错误
   fi
 else
-  log "ASN文件夹不存在。"
+  log "ASN folder does not exist."
   exit 1  # 退出脚本，1 表示出现了错误
 fi
 
@@ -177,15 +177,15 @@ if [ -f "CloudFlareIP.txt" ]; then
 
 	# 检测ip文件夹是否存在
 	if [ -d "ip" ]; then
-		log "开始清理IP地区文件"
+		#log "开始清理IP地区文件"
 		rm -f ip/*
-		log "清理IP地区文件完成。"
+		#log "清理IP地区文件完成。"
 	else
-		log "创建IP地区文件。"
+		#log "创建IP地区文件。"
 		mkdir -p ip
 	fi
 
-log "正在将IP按国家代码保存到ip文件夹内..."
+#log "正在将IP按国家代码保存到ip文件夹内..."
     # 逐行处理CloudFlareIP.txt文件
     while read -r line; do
         ip=$(echo $line | cut -d ' ' -f 1)  # 提取IP地址部分
@@ -208,6 +208,6 @@ else
 fi
 
 else
-    log "CloudFlareIP.txt文件不存在，脚本终止。"
+    log "The CloudFlareIPScan result is empty, please add the IP segment."
     exit 1
 fi
