@@ -16,7 +16,7 @@ if [ "$mem" -gt 1024 ]; then
 else
     TestCFIPDet=2 #验证次数
 fi
-TestCFIPThreads=$((coeff * 8)) #验证线程
+TestCFIPThreads=$((coeff * 7)) #验证线程
 IPs=0
 #带有telegramBotUserId参数，将赋值第1参数为telegramBotUserId
 if [ -n "$1" ]; then 
