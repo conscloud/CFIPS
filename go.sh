@@ -3,6 +3,8 @@ export LANG=zh_CN.UTF-8
 perf=1 # 机器性能倍率，爆内存就调低，跑不满机器就调高，默认1
 DetailedLog=0 # 打开详细日志设为1
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
+telegramBotUserId="" # telegram UserId
+telegramBotToken="" #telegram BotToken
 ###############################################################以下脚本内容，勿动#######################################################################
 mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
 # 计算系数，向上取整
@@ -20,6 +22,28 @@ log() {
     if [ "$DetailedLog" -eq 1 ]; then
         echo -e "[$(date "+%Y-%m-%d %H:%M:%S")] $1"
     fi
+}
+
+TGmessage(){
+#解析模式，可选HTML或Markdown
+MODE='HTML'
+#api接口
+URL="https://api.telegram.org/bot${telegramBotToken}/sendMessage"
+if [[ -z ${telegramBotToken} ]]; then
+   log "未配置TG推送"
+else
+   res=$(timeout 20s curl -s -X POST $URL -d chat_id=${telegramBotUserId}  -d parse_mode=${MODE} -d text="$1")
+    if [ $? == 124 ];then
+      log 'TG_api请求超时,请检查网络是否重启完成并是否能够访问TG'          
+    else
+      resSuccess=$(echo "$res" | jq -r ".ok")
+      if [[ $resSuccess = "true" ]]; then
+        log "TG推送成功"
+      else
+        log "TG推送失败，请检查TG机器人token和ID"
+      fi
+    fi
+fi
 }
 
 log "RAM: ${mem} MB"
@@ -192,7 +216,8 @@ if [ -d "$asnfolder" ]; then
 		Hours=$((TimeDiff / 3600))
 		Minutes=$(( (TimeDiff % 3600) / 60 ))
 		Seconds=$((TimeDiff % 60))
-		echo -e "[$(date "+%Y-%m-%d %H:%M:%S")] Scan ASN $asnname IPs: $IPs completed 100%. Exec time: $Hours h $Minutes m $Seconds s."
+		echo "[$(date "+%Y-%m-%d %H:%M:%S")] Scan ASN $asnname IPs: $IPs completed 100%. Exec time: $Hours h $Minutes m $Seconds s."
+		TGmessage "CloudFlareIPScan：$asnname扫描完成，IP扫描量：$IPs，耗时$Hours时$Minutes分$Seconds秒。"
     done
   else
     log "There is no txt file in the ASN folder."
