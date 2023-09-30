@@ -212,7 +212,7 @@ fi
 
 # 将当前目录下的ip文件夹内的所有文件打包成ip.zip
 if [ -d "ip" ]; then
-  zip -r ip.zip ip/
+  zip -r ip.zip ip/*
   log "CloudFlareIPScan Packaging ip.zip Completed!"
 else
   log "CloudFlareIPScan Completed!"
