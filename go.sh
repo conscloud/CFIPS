@@ -246,13 +246,13 @@ if [ -d "$asnfolder" ]; then
 		echo "                                            ASN: $asnname"
 		echo "                                            IPs: $IPs"
 		echo "                                            Valid IPs: $ip_line_count"
-		echo "                                            Pore: 80,443"
+		echo "                                            Port: 80,443"
 		echo "                                            Exec time: $Hours h $Minutes m $Seconds s"
 		TGmessage "CloudFlareIPScan：扫描完成！
 		ASN：$asnname
 		IPs：$IPs
 		Valid IP：$ip_line_count
-		Pore：80,443
+		Port：80,443
 		Exec time：$Hours时$Minutes分$Seconds秒"
     done
   else
