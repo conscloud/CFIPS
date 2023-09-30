@@ -1,6 +1,7 @@
 #!/bin/bash
 export LANG=zh_CN.UTF-8
 perf=1 # 机器性能倍率，爆内存就调低，跑不满机器就调高，默认1
+DetailedLog=0 # 打开详细日志设为1
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
 ###############################################################以下脚本内容，勿动#######################################################################
 mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
@@ -14,9 +15,11 @@ else
     TestCFIPDet=2 #验证次数
 fi
 TestCFIPThreads=$((coeff * 8)) #验证线程
-
+IPs=0
 log() {
-    echo -e "[$(date "+%Y-%m-%d %H:%M:%S")] $1"
+    if [ "$DetailedLog" -eq 1 ]; then
+        echo -e "[$(date "+%Y-%m-%d %H:%M:%S")] $1"
+    fi
 }
 
 log "RAM: ${mem} MB"
@@ -150,8 +153,9 @@ if [ -d "$asnfolder" ]; then
     for txtfile in "${txtfiles[@]}"; do
       # 提取文件名并去掉路径部分
 	  asnname=$(basename "$txtfile")
-	  log "Scan ASN $asnname"
-	  
+	  IPs=0
+	  StartTime=$(date "+%s")  # 获取开始时间的Unix时间戳
+	  echo -e "[$(date "+%Y-%m-%d %H:%M:%S")] Scan ASN $asnname"
 		while IFS= read -r line; do
 			echo "$line" >> ip.txt
 			current_line=$((current_line + 1))
@@ -159,6 +163,10 @@ if [ -d "$asnfolder" ]; then
 			if [ "$current_line" -eq "$lines_per_batch" ]; then
 				rm -f temp/*
 				python3 process_ip.py
+       				if [ -f "temp/ip0.txt" ]; then
+    				  ip0_line_count=$(wc -l < "temp/ip0.txt")  # 获取文件行数
+    				  IPs=$((IPs + ip0_line_count))  # 将行数加到IPs上
+				fi
 				gogogo
 				current_line=0
 				> ip.txt  # 清空ip.txt文件的内容
@@ -169,10 +177,22 @@ if [ -d "$asnfolder" ]; then
 		if [ "$current_line" -gt 0 ]; then
 			rm -f temp/*
 			python3 process_ip.py
+   			if [ -f "temp/ip0.txt" ]; then
+    			  ip0_line_count=$(wc -l < "temp/ip0.txt")  # 获取文件行数
+    			  IPs=$((IPs + ip0_line_count))  # 将行数加到IPs上
+			fi
 			gogogo
 			> ip.txt  # 清空ip.txt文件的内容
 		fi
+		EndTime=$(date "+%s")  # 获取任务完成时间的Unix时间戳
+		# 计算时间差
+		TimeDiff=$((EndTime - StartTime))
 
+		# 将时间差转换为时分秒格式
+		Hours=$((TimeDiff / 3600))
+		Minutes=$(( (TimeDiff % 3600) / 60 ))
+		Seconds=$((TimeDiff % 60))
+		echo -e "[$(date "+%Y-%m-%d %H:%M:%S")] Scan ASN $asnname IPs: $IPs completed 100%. Exec time: $Hours h $Minutes m $Seconds s."
     done
   else
     log "There is no txt file in the ASN folder."
