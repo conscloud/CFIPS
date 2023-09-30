@@ -18,6 +18,16 @@ else
 fi
 TestCFIPThreads=$((coeff * 8)) #验证线程
 IPs=0
+#带有telegramBotUserId参数，将赋值第1参数为telegramBotUserId
+if [ -n "$1" ]; then 
+    telegramBotUserId="$1"
+fi
+
+#带有telegramBotToken参数，将赋值第2参数为telegramBotToken
+if [ -n "$2" ]; then
+    telegramBotToken="$2"
+fi
+
 log() {
     if [ "$DetailedLog" -eq 1 ]; then
         echo -e "[$(date "+%Y-%m-%d %H:%M:%S")] $1"
