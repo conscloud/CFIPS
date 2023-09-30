@@ -115,6 +115,10 @@ if [ -e CloudFlareIP.txt ]; then
   rm -f CloudFlareIP.txt
 fi
 
+if [ -e ip.txt ]; then
+  rm -f ip.txt
+fi
+
 # 检测temp文件夹是否存在
 if [ ! -d "temp" ]; then
     #log "temp文件夹不存在，正在创建..."
@@ -122,6 +126,13 @@ if [ ! -d "temp" ]; then
 else
     #log "temp文件夹已存在，正在删除文件..."
     rm -f temp/*  # 删除temp文件夹内的所有文件
+fi
+
+# 检测CloudFlareIP文件夹是否存在
+if [ ! -d "CloudFlareIP" ]; then
+    mkdir CloudFlareIP
+else
+    rm -f CloudFlareIP/*
 fi
 
 gogogo(){
@@ -147,7 +158,7 @@ fi
 
 if [ -e "temp/443.txt" ]; then
     log "Test CloudFlareIP"
-    python3 TestCloudFlareIP.py $TestCFIPDet $TestCFIPThreads
+    python3 TestCloudFlareIP.py $TestCFIPDet $TestCFIPThreads $asnname
 fi
 }
 
@@ -226,8 +237,23 @@ if [ -d "$asnfolder" ]; then
 		Hours=$((TimeDiff / 3600))
 		Minutes=$(( (TimeDiff % 3600) / 60 ))
 		Seconds=$((TimeDiff % 60))
-		echo "[$(date "+%Y-%m-%d %H:%M:%S")] Scan ASN $asnname IPs: $IPs completed 100%. Exec time: $Hours h $Minutes m $Seconds s."
-		TGmessage "CloudFlareIPScan：$asnname扫描完成，IP扫描量：$IPs，耗时$Hours时$Minutes分$Seconds秒。"
+		if [ -f "CloudFlareIP/${asnname}" ]; then
+    		ip_line_count=$(wc -l < "CloudFlareIP/${asnname}")  # 获取文件行数
+		else
+			ip_line_count=0
+		fi
+		echo "[$(date "+%Y-%m-%d %H:%M:%S")] CloudFlareIPScan completed!"
+		echo "                                            ASN: $asnname"
+		echo "                                            IPs: $IPs"
+		echo "                                            Valid IPs: $ip_line_count"
+		echo "                                            Pore: 80,443"
+		echo "                                            Exec time: $Hours h $Minutes m $Seconds s"
+		TGmessage "CloudFlareIPScan：扫描完成！
+		ASN：$asnname
+		IPs：$IPs
+		Valid IP：$ip_line_count
+		Pore：80,443
+		Exec time：$Hours时$Minutes分$Seconds秒"
     done
   else
     log "There is no txt file in the ASN folder."
@@ -237,6 +263,8 @@ else
   log "ASN folder does not exist."
   exit 1  # 退出脚本，1 表示出现了错误
 fi
+
+cat CloudFlareIP/*.txt > CloudFlareIP.txt
 
 # 检查CloudFlareIP.txt文件是否存在
 if [ -f "CloudFlareIP.txt" ]; then
