@@ -232,7 +232,8 @@ if [ -d "$asnfolder" ]; then
 
 	TGmessage "CloudFlareIPScan：扫描任务已启动！%0A本次扫描任务列表：%0A$ASNtgtext0"
 	StartTime0=$(date "+%s")  # 获取开始时间的Unix时间戳
-	
+	nohup ./PMD.sh > going.txt 2>&1 &
+ 
   # 检查是否存在txt文件
   if [ ${#txtfiles[@]} -gt 0 ]; then
     # 遍历txt文件数组并将文件名作为参数传递给python3脚本
