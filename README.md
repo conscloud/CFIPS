@@ -22,6 +22,7 @@ nohup ./go.sh 712345678 6123456789:ABCDEFGABCBACBA-XVSDFWERR_FDASDFWER > going.t
 ```
 CFIPS
  ├─ ASN.zip             #AS库备份
+ ├─ CloudFlareIP.txt    #扫描结果 汇总
  ├─ go.sh               #脚本主体
  ├─ going.txt           #按上述运行方式会产生going.txt日志文件
  ├─ ip.txt              #单次扫描IP段产生的临时文件
