@@ -11,6 +11,7 @@ mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
 coeff=$(awk -v mem="$mem" -v perf="$perf" 'BEGIN { coeff=int((mem + 511) * perf / 512); if ((mem + 511) * perf % 512 > 0) coeff++; print coeff }')
 Threads=$((coeff * 384)) # 端口扫描线程数
 lines_per_batch=$((coeff * 4)) # 每次读取ip段的行数,避免机器内存不足数据溢出
+TestUnit=$(( (coeff * 512) / perf )) # 计算TestCloudFlareIP任务量上限
 if [ "$mem" -gt 1024 ]; then
     TestCFIPDet=3 #验证次数
 else
@@ -34,29 +35,9 @@ log() {
     fi
 }
 
-TGmessage(){
-#解析模式，可选HTML或Markdown
-MODE='HTML'
-#api接口
-URL="https://api.telegram.org/bot${telegramBotToken}/sendMessage"
-if [[ -z ${telegramBotToken} ]]; then
-   log "未配置TG推送"
-else
-   res=$(timeout 20s curl -s -X POST $URL -d chat_id=${telegramBotUserId}  -d parse_mode=${MODE} -d text="$1")
-    if [ $? == 124 ];then
-      log 'TG_api请求超时,请检查网络是否重启完成并是否能够访问TG'          
-    else
-      resSuccess=$(echo "$res" | jq -r ".ok")
-      if [[ $resSuccess = "true" ]]; then
-        log "TG推送成功"
-      else
-        log "TG推送失败，请检查TG机器人token和ID"
-      fi
-    fi
-fi
-}
-
 log "RAM: ${mem} MB"
+log "COEFF: ${coeff}"
+log "TestUnit: ${TestUnit}"
 current_line=1
 update_gengxinzhi=0
 apt_update() {
@@ -78,6 +59,29 @@ apt_install() {
 
 apt_install curl
 apt_install zip
+apt_install zip
+
+TGmessage(){
+#解析模式，可选HTML或Markdown
+MODE='HTML'
+#api接口
+URL="https://api.telegram.org/bot${telegramBotToken}/sendMessage"
+if [[ -z ${telegramBotToken} ]]; then
+   log "Telegram push notification not configured"
+else
+   res=$(timeout 20s curl -s -X POST $URL -d chat_id=${telegramBotUserId}  -d parse_mode=${MODE} -d text="$1")
+    if [ $? == 124 ];then
+      log 'TG_api请求超时,请检查网络是否重启完成并是否能够访问TG'          
+    else
+      resSuccess=$(echo "$res" | jq -r ".ok")
+      if [[ $resSuccess = "true" ]]; then
+        log "TG推送成功"
+      else
+        log "TG推送失败，请检查TG机器人token和ID"
+      fi
+    fi
+fi
+}
 
 # 检测是否已经安装了geoiplookup
 if ! command -v geoiplookup &> /dev/null; then
@@ -158,7 +162,34 @@ fi
 
 if [ -e "temp/443.txt" ]; then
     log "Test CloudFlareIP"
-    python3 TestCloudFlareIP.py $TestCFIPDet $TestCFIPThreads $asnname
+	
+	inputFile="temp/443.txt"
+	lineCount=$(wc -l < "$inputFile")
+
+	# 如果文件行数小于等于TestUnit，直接重命名文件并执行Python脚本
+	if [ "$lineCount" -le "$TestUnit" ]; then
+		mv "$inputFile" "temp/${asnname}.txt"
+		python3 TestCloudFlareIP.py "$TestCFIPDet" "$TestCFIPThreads" "$asnname"
+
+	
+	else
+		# 如果文件行数大于TestUnit，分割文件并执行Python脚本
+
+		# 计算分割文件的份数，向上取整
+		NS=$(( (lineCount + TestUnit - 1) / TestUnit ))
+
+		# 使用awk分割文件
+		awk -v lines="$TestUnit" -v ns="$NS" -v prefix="$asnname" '{
+			file = "temp/" prefix "-" int((NR-1)/lines) + 1 ".txt"
+			print > file
+		} ' "$inputFile"
+
+
+		for i in $(seq 1 $NS); do
+			python3 TestCloudFlareIP.py "$TestCFIPDet" "$TestCFIPThreads" "${asnname}-${i}"
+		done
+		
+	fi
 fi
 }
 
@@ -197,7 +228,7 @@ if [ -d "$asnfolder" ]; then
     log "CloudFlareIPScan Starts."
     for txtfile in "${txtfiles[@]}"; do
       # 提取文件名并去掉路径部分
-	  asnname=$(basename "$txtfile")
+	  asnname=$(basename "$txtfile" .txt)
 	  IPs=0
 	  StartTime=$(date "+%s")  # 获取开始时间的Unix时间戳
 	  echo -e "[$(date "+%Y-%m-%d %H:%M:%S")] Scan ASN $asnname"
@@ -238,7 +269,7 @@ if [ -d "$asnfolder" ]; then
 		Minutes=$(( (TimeDiff % 3600) / 60 ))
 		Seconds=$((TimeDiff % 60))
 		if [ -f "CloudFlareIP/${asnname}" ]; then
-    		ip_line_count=$(wc -l < "CloudFlareIP/${asnname}")  # 获取文件行数
+    		ip_line_count=$(wc -l < "CloudFlareIP/${asnname}.txt")  # 获取文件行数
 		else
 			ip_line_count=0
 		fi
@@ -279,7 +310,7 @@ if [ -f "CloudFlareIP.txt" ]; then
 		mkdir -p ip
 	fi
 
-#log "正在将IP按国家代码保存到ip文件夹内..."
+	#log "正在将IP按国家代码保存到ip文件夹内..."
     # 逐行处理CloudFlareIP.txt文件
     while read -r line; do
         ip=$(echo $line | cut -d ' ' -f 1)  # 提取IP地址部分
@@ -288,18 +319,37 @@ if [ -f "CloudFlareIP.txt" ]; then
 		echo $ip >> "ip/${country_code}-443.txt"  # 写入对应的国家文件
     done < CloudFlareIP.txt
 
-# 检测ip.zip文件是否存在，如果存在就删除
-if [ -f "ip.zip" ]; then
-  rm -f ip.zip
-fi
+	if [ -e "ip/-443.txt" ]; then
+		mv "ip/-443.txt" "ip/null-443.txt"
+	fi
+	# 定义数组
+	Codetxtfiles=("ip"/*.txt)
+	ENDtgtext0=""
 
-# 将当前目录下的ip文件夹内的所有文件打包成ip.zip
-if [ -d "ip" ]; then
-  zip -r ip.zip ip/*
-  log "CloudFlareIPScan Packaging ip.zip Completed!"
-else
-  log "CloudFlareIPScan Completed!"
-fi
+	# 遍历数组中的文件名
+	for file in "${Codetxtfiles[@]}"; do
+		# 使用basename命令提取文件名部分（不包括路径和扩展名）
+		CC=$(basename "$file" .txt)
+		CClineCount=$(wc -l < "$file")
+		ENDtgtext="	地区:	$CC  	可用IP:	$CClineCount%0A"
+		ENDtgtext0="$ENDtgtext0$ENDtgtext"
+		# 在这里添加处理文件的逻辑，例如读取文件内容、处理数据等
+	done
+
+	TGmessage "CloudFlareIPScan:	扫描任务已全部完成！%0A$ENDtgtext0"
+
+	# 检测ip.zip文件是否存在，如果存在就删除
+	if [ -f "ip.zip" ]; then
+	  rm -f ip.zip
+	fi
+
+	# 将当前目录下的ip文件夹内的所有文件打包成ip.zip
+	if [ -d "ip" ]; then
+	  zip -r ip.zip ip/*
+	  log "CloudFlareIPScan Packaging ip.zip Completed!"
+	else
+	  log "CloudFlareIPScan Completed!"
+	fi
 
 else
     log "The CloudFlareIPScan result is empty, please add the IP segment."
