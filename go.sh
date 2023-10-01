@@ -221,7 +221,18 @@ fi
 if [ -d "$asnfolder" ]; then
   # 获取ASN文件夹中的所有txt文件并将它们存储到数组中
   txtfiles=("$asnfolder"/*.txt)
+	ASNtgtext0=""
+	# 遍历数组中的文件名
+	for file in "${txtfiles[@]}"; do
+		ASN=$(basename "$file" .txt)
+		ASNtgtext="$ASN%0A"
+		ASNtgtext0="$ASNtgtext0$ASNtgtext"
+		# 在这里添加处理文件的逻辑，例如读取文件内容、处理数据等
+	done
 
+	TGmessage "CloudFlareIPScan：扫描任务已启动！%0A本次扫描任务列表：%0A$ASNtgtext0"
+	StartTime0=$(date "+%s")  # 获取开始时间的Unix时间戳
+	
   # 检查是否存在txt文件
   if [ ${#txtfiles[@]} -gt 0 ]; then
     # 遍历txt文件数组并将文件名作为参数传递给python3脚本
@@ -331,12 +342,20 @@ if [ -f "CloudFlareIP.txt" ]; then
 		# 使用basename命令提取文件名部分（不包括路径和扩展名）
 		CC=$(basename "$file" .txt)
 		CClineCount=$(wc -l < "$file")
-		ENDtgtext="	地区:	$CC  	可用IP:	$CClineCount%0A"
+		ENDtgtext="	地区：$CC  	可用IP：$CClineCount%0A"
 		ENDtgtext0="$ENDtgtext0$ENDtgtext"
 		# 在这里添加处理文件的逻辑，例如读取文件内容、处理数据等
 	done
 
-	TGmessage "CloudFlareIPScan:	扫描任务已全部完成！%0A$ENDtgtext0"
+	EndTime0=$(date "+%s")  # 获取任务完成时间的Unix时间戳
+	# 计算时间差
+	TimeDiff0=$((EndTime0 - StartTime0))
+
+	# 将时间差转换为时分秒格式
+	Hours0=$((TimeDiff0 / 3600))
+	Minutes0=$(( (TimeDiff0 % 3600) / 60 ))
+	Seconds0=$((TimeDiff0 % 60))
+	TGmessage "CloudFlareIPScan：扫描任务已全部完成！%0A本次扫描任务汇总：%0A$ENDtgtext0%0A总计用时：$Hours时$Minutes分$Seconds秒"
 
 	# 检测ip.zip文件是否存在，如果存在就删除
 	if [ -f "ip.zip" ]; then
