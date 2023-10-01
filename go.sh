@@ -59,7 +59,7 @@ apt_install() {
 
 apt_install curl
 apt_install zip
-apt_install zip
+apt_install jq
 
 TGmessage(){
 #解析模式，可选HTML或Markdown
