@@ -232,7 +232,7 @@ if [ -d "$asnfolder" ]; then
 
 	TGmessage "CloudFlareIPScan：扫描任务已启动！%0A本次扫描任务列表：%0A$ASNtgtext0"
 	StartTime0=$(date "+%s")  # 获取开始时间的Unix时间戳
-	nohup ./PMD.sh > going.txt 2>&1 &
+	nohup ./PMD.sh > /dev/null 2>&1 & # 启动防假死脚本
  
   # 检查是否存在txt文件
   if [ ${#txtfiles[@]} -gt 0 ]; then
