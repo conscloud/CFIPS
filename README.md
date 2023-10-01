@@ -26,6 +26,7 @@ CFIPS
  ├─ go.sh               #脚本主体
  ├─ going.txt           #按上述运行方式会产生going.txt日志文件
  ├─ ip.txt              #单次扫描IP段产生的临时文件
+ ├─ PMD.sh              #防止TestCloudFlareIP.py假死脚本
  ├─ process_ip.py       #将CIDR格式的IP段展开的python脚本
  ├─ Pscan               #端口扫描程序
  ├─ TestCloudFlareIP.py #验证是否是CFip的python脚本
