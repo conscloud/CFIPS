@@ -24,7 +24,7 @@ python_pid0="null"
 # 检测go.sh脚本是否在运行的函数
 check_go_process() {
     local go_process_count=$(pgrep -c -f "go.sh")
-    echo "go.sh进程数量: $go_process_count"
+    #echo "go.sh进程数量: $go_process_count"
     if [ $go_process_count -eq 0 ]; then
         #echo "go.sh脚本未在运行，结束脚本。"
         exit 0
@@ -34,17 +34,17 @@ check_go_process() {
 # 检测"python3 TestCloudFlareIP.py"脚本是否在运行的函数
 check_python_process() {
     local python_process_cmdline=$(pgrep -a -f "python3 TestCloudFlareIP.py")
-    echo "TestCloudFlareIP.py进程命令行: $python_process_cmdline"
+    #echo "TestCloudFlareIP.py进程命令行: $python_process_cmdline"
     
     if [[ $python_process_cmdline == *"python3 TestCloudFlareIP.py"* ]]; then
         local python_pid=$(echo "$python_process_cmdline" | awk '{print $1}')
 		if [ "$python_pid0" = "null" ]; then
 		    python_pid0=$python_pid
 		else
-			if [ "$python_pid0" = "$python_pid" ]; then
-		        echo "Killed unresponsive TestCloudFlareIP.py!  PID:$python_pid"
-                kill $python_pid
-				python_pid0="null"
+		    if [ "$python_pid0" = "$python_pid" ]; then
+			echo "Killed unresponsive TestCloudFlareIP.py!  PID:$python_pid"
+			kill $python_pid
+			python_pid0="null"
 		    else
 		        python_pid0=$python_pid
 		    fi
