@@ -279,11 +279,27 @@ if [ -d "$asnfolder" ]; then
 		Hours=$((TimeDiff / 3600))
 		Minutes=$(( (TimeDiff % 3600) / 60 ))
 		Seconds=$((TimeDiff % 60))
-		if [ -f "CloudFlareIP/${asnname}" ]; then
-    		ip_line_count=$(wc -l < "CloudFlareIP/${asnname}.txt")  # 获取文件行数
+
+		# 检查指定目录中是否存在符合特定模式的文件
+		if ls "CloudFlareIP/${asnname}"*.txt 1> /dev/null 2>&1; then
+		    # 将符合要求的txt文件内容写入临时缓存
+		    cat "CloudFlareIP/${asnname}"*.txt > temp_cache.txt
+		    
+		    # 删除符合要求的txt文件
+		    rm "CloudFlareIP/${asnname}"*.txt
+		    
+		    # 创建CloudFlareIP/${asnname}.txt文件并将缓存内容写入
+		    cat temp_cache.txt > "CloudFlareIP/${asnname}.txt"
+		    rm temp_cache.txt
+		
+		fi
+  
+		if [ -f "CloudFlareIP/${asnname}.txt" ]; then
+    			ip_line_count=$(wc -l < "CloudFlareIP/${asnname}.txt")  # 获取文件行数
 		else
 			ip_line_count=0
 		fi
+
 		echo "[$(date "+%Y-%m-%d %H:%M:%S")] CloudFlareIPScan completed!"
 		echo "                                            ASN: $asnname"
 		echo "                                            IPs: $IPs"
