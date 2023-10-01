@@ -6,7 +6,8 @@ import sys
 # 获取命令行参数
 TestCFIPDet = int(sys.argv[1])
 TestCFIPThreads = int(sys.argv[2])
-asnname = 'CloudFlareIP/{}'.format(sys.argv[3])
+asnname = 'CloudFlareIP/{}.txt'.format(sys.argv[3])
+InputPath = 'temp/{}.txt'.format(sys.argv[3])
 # 读取ip.txt中的每个IP地址并执行测试
 def test_ip(ip):
     max_retries = TestCFIPDet  # 验证次数2~3
@@ -29,8 +30,8 @@ def test_ip(ip):
 
 # 使用多线程执行测试
 with ThreadPoolExecutor(max_workers=TestCFIPThreads) as executor:  # 这里设置线程池的最大线程数
-    with open('temp/443.txt', 'r') as ip_file:
+    with open(f'{InputPath}', 'r') as ip_file:
         ips = [ip.strip() for ip in ip_file]
         executor.map(test_ip, ips)
 
-#print("测试完成。Cloudflare IP 地址已写入 CloudFlareIP.txt 文件。")
+#print("测试完成。")
