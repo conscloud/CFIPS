@@ -38,10 +38,10 @@ check_python_process() {
     
     if [[ $python_process_cmdline == *"python3 TestCloudFlareIP.py"* ]]; then
         local python_pid=$(echo "$python_process_cmdline" | awk '{print $1}')
-		if [ "$python_pid0" -eq "null" ]; then
+		if [ "$python_pid0" = "null" ]; then
 		    python_pid0=$python_pid
 		else
-			if [ "$python_pid0" -eq "$python_pid" ]; then
+			if [ "$python_pid0" = "$python_pid" ]; then
 		        echo "Killed unresponsive TestCloudFlareIP.py!  PID:$python_pid"
                 kill $python_pid
 				python_pid0="null"
