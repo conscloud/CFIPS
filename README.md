@@ -28,6 +28,7 @@ CFIPS
  ├─ process_ip.py       #将CIDR格式的IP段展开的python脚本
  ├─ Pscan               #端口扫描程序
  ├─ TestCloudFlareIP.py #验证是否是CFip的python脚本
+ ├─ ip.zip              #扫描结束后自动打包扫描结果ip.zip
  ├─ ASN                 #扫描任务IP库,将需要扫描是IP段和IP写入txt文件放入ASN文件夹后脚本运行就会自动扫描文件夹内的所有IP
  │   ├─ AS132203.txt
  │   ├─ AS31898.txt
