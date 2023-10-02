@@ -372,7 +372,7 @@ if [ -f "CloudFlareIP.txt" ]; then
 	Hours0=$((TimeDiff0 / 3600))
 	Minutes0=$(( (TimeDiff0 % 3600) / 60 ))
 	Seconds0=$((TimeDiff0 % 60))
-	TGmessage "CloudFlareIPScan：扫描任务已全部完成！%0A本次扫描任务汇总：%0A$ENDtgtext0%0A总计用时：$Hours时$Minutes分$Seconds秒"
+	TGmessage "CloudFlareIPScan：扫描任务已全部完成！%0A本次扫描任务汇总：%0A$ENDtgtext0%0A总计用时：$Hours0时$Minutes0分$Seconds0秒"
 
 	# 检测ip.zip文件是否存在，如果存在就删除
 	if [ -f "ip.zip" ]; then
