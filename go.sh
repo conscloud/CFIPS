@@ -114,11 +114,6 @@ if [ ! -f "/usr/share/GeoIP/GeoLite2-Country.mmdb" ]; then
     fi
 fi
 
-if [ -e CloudFlareIP.txt ]; then
-  #log "清理旧的CloudFlareIP.txt文件."
-  rm -f CloudFlareIP.txt
-fi
-
 if [ -e ip.txt ]; then
   rm -f ip.txt
 fi
@@ -324,6 +319,10 @@ else
   exit 1  # 退出脚本，1 表示出现了错误
 fi
 
+if [ -e CloudFlareIP.txt ]; then
+  #log "清理旧的CloudFlareIP.txt文件."
+  rm -f CloudFlareIP.txt
+fi
 cat CloudFlareIP/*.txt > CloudFlareIP.txt
 
 # 检查CloudFlareIP.txt文件是否存在
