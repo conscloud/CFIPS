@@ -64,7 +64,7 @@ while true; do
     ((counter++))
 
     # 在第30次循环时检测Python进程
-    if [ $counter -eq 30 ]; then
+    if [ $counter -eq 40 ]; then
         check_python_process
         counter=0  # 重置计数器
     fi
