@@ -209,7 +209,8 @@ else
     if [ ! -f "ASN.zip" ]; then
         # 如果ASN.zip文件不存在，使用curl命令下载文件
 	log "Download ASN.zip"
-        curl -L -o ASN.zip "${proxygithub}https://raw.githubusercontent.com/cmliu/CFIPS/main/ASN.zip"
+        #curl -L -o ASN.zip "${proxygithub}https://raw.githubusercontent.com/cmliu/CFIPS/main/ASN.zip"
+	curl -L --progress-bar -o ASN.zip "${proxygithub}https://raw.githubusercontent.com/cmliu/CFIPS/main/ASN.zip"
     fi
     log "unzip ASN.zip"
     # 解压ASN.zip到ASN文件夹
