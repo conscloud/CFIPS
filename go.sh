@@ -10,11 +10,14 @@ mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
 # 计算系数，向上取整
 coeff=$(awk -v mem="$mem" -v perf="$perf" 'BEGIN { coeff=int((mem + 511) * perf / 512); if ((mem + 511) * perf % 512 > 0) coeff++; print coeff }')
 Threads=$((coeff * 384)) # 端口扫描线程数
-lines_per_batch=$((coeff * 4)) # 每次读取ip段的行数,避免机器内存不足数据溢出
+lines_per_batch=$((coeff * 3)) # 每次读取ip段的行数,避免机器内存不足数据溢出
 if [ $coeff -eq 1 ]; then
     TestUnit=512
 else
     TestUnit=$(printf "%.0f" $(echo "scale=2; ($coeff * 512) / $perf" | bc)) # 计算TestCloudFlareIP任务量上限，向下取整
+    if [ $TestUnit -gt 2048 ]; then
+      TestUnit=2048
+    fi
 fi
 if [ "$mem" -gt 1024 ]; then
     TestCFIPDet=3 #验证次数
