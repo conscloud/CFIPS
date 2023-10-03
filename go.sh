@@ -74,17 +74,17 @@ MODE='HTML'
 #api接口
 URL="https://api.telegram.org/bot${telegramBotToken}/sendMessage"
 if [[ -z ${telegramBotToken} ]]; then
-   log "Telegram push notification not configured"
+   log "Telegram push notification not configured."
 else
    res=$(timeout 20s curl -s -X POST $URL -d chat_id=${telegramBotUserId}  -d parse_mode=${MODE} -d text="$1")
     if [ $? == 124 ];then
-      log 'TG_api请求超时,请检查网络是否重启完成并是否能够访问TG'          
+      log "Telegram API request timed out, please check if the network has restarted and can access Telegram."          
     else
       resSuccess=$(echo "$res" | jq -r ".ok")
       if [[ $resSuccess = "true" ]]; then
-        log "TG推送成功"
+        log "Telegram message push was successful!"
       else
-        log "TG推送失败，请检查TG机器人token和ID"
+        log "Telegram message push failed, please check Telegram bot telegramBotToken and telegramBotUserId!"
       fi
     fi
 fi
