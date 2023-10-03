@@ -1,8 +1,10 @@
 # CloudFlareIPScan
-运行环境ubuntu20
-拉取
+白嫖总得来说不好，请不要公开传播，项目热度太高就删库
+
+
+测试运行环境ubuntu-18.04-standard_18.04.1-1_amd64
 ``` bash
-git clone "https://github.cmliu.net/https://github.com/cmliu/CFIPS.git" && cd CFIPS && chmod +x go.sh PMD.sh process_ip.py TestCloudFlareIP.py Pscan
+git clone "https://ghproxy.com/https://github.com/cmliu/CFIPS.git" && cd CFIPS && chmod +x go.sh PMD.sh process_ip.py TestCloudFlareIP.py Pscan
 ```
 
 后台运行,日志going.txt
@@ -31,7 +33,7 @@ CFIPS
  ├─ Pscan               #端口扫描程序
  ├─ TestCloudFlareIP.py #验证是否是CFip的python脚本
  ├─ ip.zip              #扫描结束后自动打包扫描结果ip.zip
- ├─ ASN                 #扫描任务IP库,将需要扫描是IP段和IP写入txt文件放入ASN文件夹后脚本运行就会自动扫描文件夹内的所有IP
+ ├─ ASN                 #扫描任务IP库,将需要扫描的IP段或IP写入txt文件后放入ASN文件夹即可,脚本运行就会自动扫描文件夹内的所有IP
  │   ├─ AS132203.txt
  │   ├─ AS31898.txt
  │  ...
