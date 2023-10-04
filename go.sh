@@ -5,6 +5,7 @@ DetailedLog=0 # 打开详细日志设为1
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
 telegramBotUserId="" # telegram UserId
 telegramBotToken="" #telegram BotToken
+telegramBotAPI="api.telegram.org" #telegram 推送API,留空将启用官方API接口:api.telegram.org
 ###############################################################以下脚本内容，勿动#######################################################################
 mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
 # 计算系数，向上取整
@@ -69,10 +70,13 @@ apt_install zip
 apt_install jq
 
 TGmessage(){
+if [ -z "$telegramBotAPI" ]; then
+    telegramBotAPI="api.telegram.org"
+fi
 #解析模式，可选HTML或Markdown
 MODE='HTML'
 #api接口
-URL="https://api.telegram.org/bot${telegramBotToken}/sendMessage"
+URL="https://${telegramBotAPI}/bot${telegramBotToken}/sendMessage"
 if [[ -z ${telegramBotToken} ]]; then
    log "Telegram push notification not configured."
 else
@@ -308,13 +312,13 @@ if [ -d "$asnfolder" ]; then
 		echo "                                            ASN: $asnname"
 		echo "                                            IPs: $IPs"
 		echo "                                            Valid IPs: $ip_line_count"
-		echo "                                            Port: 80,443"
+		echo "                                            Ports: 80,443"
 		echo "                                            Exec time: $Hours h $Minutes m $Seconds s"
 		TGmessage "CloudFlareIPScan：扫描完成！
 		ASN：$asnname
 		IPs：$IPs
 		Valid IP：$ip_line_count
-		Port：80,443
+		Ports：80,443
 		Exec time：$Hours时$Minutes分$Seconds秒"
     done
   else
