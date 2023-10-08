@@ -227,14 +227,20 @@ fi
 # 检查ASN文件夹是否存在
 if [ -d "$asnfolder" ]; then
   # 获取ASN文件夹中的所有txt文件并将它们存储到数组中
+  if [ -e "CloudFlareIP.txt" ]; then
+      cp CloudFlareIP.txt ASN/CloudFlareIP.History.txt
+  fi
   txtfiles=("$asnfolder"/*.txt)
 	ASNtgtext0=""
 	# 遍历数组中的文件名
 	for file in "${txtfiles[@]}"; do
 		ASN=$(basename "$file" .txt)
-		ASNtgtext="$ASN%0A"
+		if [ "$ASN" = "CloudFlareIP.History" ]; then
+		  ASNtgtext="CloudFlareIP.历史记录%0A"
+  		else
+  		  ASNtgtext="$ASN%0A"
+		fi
 		ASNtgtext0="$ASNtgtext0$ASNtgtext"
-		# 在这里添加处理文件的逻辑，例如读取文件内容、处理数据等
 	done
 
 	TGmessage "CloudFlareIPScan：扫描任务已启动！%0A本次扫描任务列表：%0A$ASNtgtext0"
@@ -314,6 +320,11 @@ if [ -d "$asnfolder" ]; then
 		echo "                                            Valid IPs: $ip_line_count"
 		echo "                                            Ports: 80,443"
 		echo "                                            Exec time: $Hours h $Minutes m $Seconds s"
+
+		if [ "$asnname" = "CloudFlareIP.History" ]; then
+		    asnname="CloudFlareIP.历史记录"
+		fi
+  
 		TGmessage "CloudFlareIPScan：扫描完成！
 		ASN：$asnname
 		IPs：$IPs
@@ -334,7 +345,11 @@ if [ -e CloudFlareIP.txt ]; then
   #log "清理旧的CloudFlareIP.txt文件."
   rm -f CloudFlareIP.txt
 fi
-cat CloudFlareIP/*.txt > CloudFlareIP.txt
+
+cat CloudFlareIP/*.txt > CloudFlareIP_temp.txt
+# 去重
+awk '!a[$0]++' CloudFlareIP_temp.txt > CloudFlareIP.txt
+rm CloudFlareIP_temp.txt
 
 # 检查CloudFlareIP.txt文件是否存在
 if [ -f "CloudFlareIP.txt" ]; then
@@ -384,6 +399,10 @@ if [ -f "CloudFlareIP.txt" ]; then
 	Minutes0=$(( (TimeDiff0 % 3600) / 60 ))
 	Seconds0=$((TimeDiff0 % 60))
 	TGmessage "CloudFlareIPScan：扫描任务已全部完成！%0A本次扫描任务汇总：%0A$ENDtgtext0%0A总计用时：$Hours0时$Minutes0分$Seconds0秒"
+
+	if [ -e "ASN/CloudFlareIP.History.txt" ]; then
+	    rm ASN/CloudFlareIP.History.txt
+	fi
 
 	# 检测ip.zip文件是否存在，如果存在就删除
 	if [ -f "ip.zip" ]; then
