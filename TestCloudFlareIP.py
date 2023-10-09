@@ -11,7 +11,7 @@ httpport = [80, 8080, 8880, 2052, 2082, 2086, 2095]
 
 # 检查是否有第4个参数，如果没有则port为443，如果有则port为第4个参数
 port = int(sys.argv[4]) if len(sys.argv) > 4 else 443
-asnname = 'CloudFlareIP/{}-{}.txt'.format(sys.argv[3], port)
+asnname = 'CloudFlareIP/{}.txt'.format(sys.argv[3])
 
 # 读取ip.txt中的每个IP地址并执行测试
 def test_ip(ip):
