@@ -1,11 +1,12 @@
 #!/bin/bash
 export LANG=zh_CN.UTF-8
 perf=1 # 机器性能倍率，爆内存就调低，跑不满机器就调高，默认1
-DetailedLog=0 # 打开详细日志设为1
+DetailedLog=1 # 打开详细日志设为1
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
 telegramBotUserId="" # telegram UserId
 telegramBotToken="" #telegram BotToken
 telegramBotAPI="api.telegram.org" #telegram 推送API,留空将启用官方API接口:api.telegram.org
+testport=443 #测试端口
 ###############################################################以下脚本内容，勿动#######################################################################
 mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
 # 计算系数，向上取整
@@ -27,14 +28,20 @@ else
 fi
 TestCFIPThreads=$((coeff * 7)) #验证线程
 IPs=0
-#带有telegramBotUserId参数，将赋值第1参数为telegramBotUserId
+
+
 if [ -n "$1" ]; then 
-    telegramBotUserId="$1"
+    testport="$1"
+fi
+
+#带有telegramBotUserId参数，将赋值第1参数为telegramBotUserId
+if [ -n "$2" ]; then 
+    telegramBotUserId="$2"
 fi
 
 #带有telegramBotToken参数，将赋值第2参数为telegramBotToken
-if [ -n "$2" ]; then
-    telegramBotToken="$2"
+if [ -n "$3" ]; then
+    telegramBotToken="$3"
 fi
 
 log() {
@@ -147,37 +154,27 @@ fi
 
 gogogo(){
 if [ -e "temp/ip0.txt" ]; then
-    log "Scan HttpPort..."
-    ./Pscan -F temp/ip0.txt -P 80 -T ${Threads} -O "temp/d80.txt" -timeout 1s > /dev/null 2>&1
+    shuchumulu="temp/d${testport}.txt"
+    log "Scan TestPort..."
+    ./Pscan -F temp/ip0.txt -P $testport -T $Threads -O $shuchumulu -timeout 1s > /dev/null 2>&1
 fi
 
-if [ -e "temp/d80.txt" ]; then
-    log "Scan HttpPort Completed."
-    awk 'NF' "temp/d80.txt" | sed 's/:80$//' >> "temp/80.txt"
+if [ -e "temp/d${testport}.txt" ]; then
+    log "Scan TestPort Completed."
+    awk 'NF' "temp/d${testport}.txt" | sed "s/:${testport}$//" > "temp/${testport}.txt"
 fi
 
-if [ -e "temp/80.txt" ]; then
-    log "Scan HttpsPort..."
-    ./Pscan -F "temp/80.txt" -P 443 -T ${Threads} -O "temp/d443.txt" -timeout 1s > /dev/null 2>&1
-fi
-
-if [ -e "temp/d443.txt" ]; then
-    log "Scan HttpsPort Completed."
-    awk 'NF' "temp/d443.txt" | sed 's/:443$//' >> "temp/443.txt"
-fi
-
-if [ -e "temp/443.txt" ]; then
+if [ -e "temp/${testport}.txt" ]; then
     log "Test CloudFlareIP"
 	
-	inputFile="temp/443.txt"
+	inputFile="temp/${testport}.txt"
 	lineCount=$(wc -l < "$inputFile")
 
 	# 如果文件行数小于等于TestUnit，直接重命名文件并执行Python脚本
 	if [ "$lineCount" -le "$TestUnit" ]; then
-		mv "$inputFile" "temp/${asnname}.txt"
-		python3 TestCloudFlareIP.py "$TestCFIPDet" "$TestCFIPThreads" "$asnname"
+		mv "$inputFile" "temp/${asnname}-${testport}.txt"
+		python3 TestCloudFlareIP.py "$TestCFIPDet" "$TestCFIPThreads" "${asnname}-${testport}" "${testport}"
 
-	
 	else
 		# 如果文件行数大于TestUnit，分割文件并执行Python脚本
 
@@ -185,14 +182,14 @@ if [ -e "temp/443.txt" ]; then
 		NS=$(( (lineCount + TestUnit - 1) / TestUnit ))
 
 		# 使用awk分割文件
-		awk -v lines="$TestUnit" -v ns="$NS" -v prefix="$asnname" '{
+		awk -v lines="$TestUnit" -v ns="$NS" -v prefix="$asnname-$testport" '{
 			file = "temp/" prefix "-" int((NR-1)/lines) + 1 ".txt"
 			print > file
 		} ' "$inputFile"
 
 
 		for i in $(seq 1 $NS); do
-			python3 TestCloudFlareIP.py "$TestCFIPDet" "$TestCFIPThreads" "${asnname}-${i}"
+			python3 TestCloudFlareIP.py "$TestCFIPDet" "$TestCFIPThreads" "${asnname}-${testport}-${i}" "${testport}"
 		done
 		
 	fi
@@ -227,16 +224,16 @@ fi
 # 检查ASN文件夹是否存在
 if [ -d "$asnfolder" ]; then
   # 获取ASN文件夹中的所有txt文件并将它们存储到数组中
-  if [ -e "CloudFlareIP.txt" ]; then
-      cp CloudFlareIP.txt ASN/CloudFlareIP.History.txt
+  if [ -e "CloudFlareIP-${testport}.txt" ]; then
+      cp "CloudFlareIP-${testport}.txt" "ASN/CloudFlareIP-${testport}.History.txt"
   fi
   txtfiles=("$asnfolder"/*.txt)
 	ASNtgtext0=""
 	# 遍历数组中的文件名
 	for file in "${txtfiles[@]}"; do
 		ASN=$(basename "$file" .txt)
-		if [ "$ASN" = "CloudFlareIP.History" ]; then
-		  ASNtgtext="CloudFlareIP.历史记录%0A"
+		if [ "$ASN" = "CloudFlareIP-${testport}.History" ]; then
+		  ASNtgtext="CloudFlareIP-${testport}.历史记录%0A"
   		else
   		  ASNtgtext="$ASN%0A"
 		fi
@@ -295,21 +292,21 @@ if [ -d "$asnfolder" ]; then
 		Seconds=$((TimeDiff % 60))
 
 		# 检查指定目录中是否存在符合特定模式的文件
-		if ls "CloudFlareIP/${asnname}"*.txt 1> /dev/null 2>&1; then
+		if ls "CloudFlareIP/${asnname}-${testport}"*.txt 1> /dev/null 2>&1; then
 		    # 将符合要求的txt文件内容写入临时缓存
-		    cat "CloudFlareIP/${asnname}"*.txt > temp_cache.txt
+		    cat "CloudFlareIP/${asnname}-${testport}"*.txt > temp_cache.txt
 		    
 		    # 删除符合要求的txt文件
-		    rm "CloudFlareIP/${asnname}"*.txt
+		    rm "CloudFlareIP/${asnname}-${testport}"*.txt
 		    
 		    # 创建CloudFlareIP/${asnname}.txt文件并将缓存内容写入
-		    cat temp_cache.txt > "CloudFlareIP/${asnname}.txt"
+		    cat temp_cache.txt > "CloudFlareIP/${asnname}-${testport}.txt"
 		    rm temp_cache.txt
 		
 		fi
   
-		if [ -f "CloudFlareIP/${asnname}.txt" ]; then
-    			ip_line_count=$(wc -l < "CloudFlareIP/${asnname}.txt")  # 获取文件行数
+		if [ -f "CloudFlareIP/${asnname}-${testport}.txt" ]; then
+    			ip_line_count=$(wc -l < "CloudFlareIP/${asnname}-${testport}.txt")  # 获取文件行数
 		else
 			ip_line_count=0
 		fi
@@ -318,7 +315,7 @@ if [ -d "$asnfolder" ]; then
 		echo "                                            ASN: $asnname"
 		echo "                                            IPs: $IPs"
 		echo "                                            Valid IPs: $ip_line_count"
-		echo "                                            Ports: 80,443"
+		echo "                                            Port: $testport"
 		echo "                                            Exec time: $Hours h $Minutes m $Seconds s"
 
 		if [ "$asnname" = "CloudFlareIP.History" ]; then
@@ -329,7 +326,7 @@ if [ -d "$asnfolder" ]; then
 		ASN：$asnname
 		IPs：$IPs
 		Valid IP：$ip_line_count
-		Ports：80,443
+		Port：$testport
 		Exec time：$Hours时$Minutes分$Seconds秒"
     done
   else
@@ -341,18 +338,18 @@ else
   exit 1  # 退出脚本，1 表示出现了错误
 fi
 
-if [ -e CloudFlareIP.txt ]; then
+if [ -e "CloudFlareIP-${testport}.txt" ]; then
   #log "清理旧的CloudFlareIP.txt文件."
-  rm -f CloudFlareIP.txt
+  rm -f "CloudFlareIP-${testport}.txt"
 fi
 
 cat CloudFlareIP/*.txt > CloudFlareIP_temp.txt
 # 去重
-awk '!a[$0]++' CloudFlareIP_temp.txt > CloudFlareIP.txt
+awk '!a[$0]++' CloudFlareIP_temp.txt > "CloudFlareIP-${testport}.txt"
 rm CloudFlareIP_temp.txt
 
 # 检查CloudFlareIP.txt文件是否存在
-if [ -f "CloudFlareIP.txt" ]; then
+if [ -f "CloudFlareIP-${testport}.txt" ]; then
 
 	# 检测ip文件夹是否存在
 	if [ -d "ip" ]; then
@@ -370,11 +367,11 @@ if [ -f "CloudFlareIP.txt" ]; then
         ip=$(echo $line | cut -d ' ' -f 1)  # 提取IP地址部分
 		result=$(mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip $ip country iso_code)
 		country_code=$(echo $result | awk -F '"' '{print $2}')
-		echo $ip >> "ip/${country_code}-443.txt"  # 写入对应的国家文件
-    done < CloudFlareIP.txt
+		echo $ip >> "ip/${country_code}-${testport}.txt"  # 写入对应的国家文件
+    done < CloudFlareIP-${testport}.txt
 
-	if [ -e "ip/-443.txt" ]; then
-		mv "ip/-443.txt" "ip/null-443.txt"
+	if [ -e "ip/-${testport}.txt" ]; then
+		mv "ip/-${testport}.txt" "ip/null-${testport}.txt"
 	fi
 	# 定义数组
 	Codetxtfiles=("ip"/*.txt)
@@ -400,19 +397,19 @@ if [ -f "CloudFlareIP.txt" ]; then
 	Seconds0=$((TimeDiff0 % 60))
 	TGmessage "CloudFlareIPScan：扫描任务已全部完成！%0A本次扫描任务汇总：%0A$ENDtgtext0%0A总计用时：$Hours0时$Minutes0分$Seconds0秒"
 
-	if [ -e "ASN/CloudFlareIP.History.txt" ]; then
-	    rm ASN/CloudFlareIP.History.txt
+	if [ -e "ASN/CloudFlareIP-${testport}.History.txt" ]; then
+	    rm "ASN/CloudFlareIP-${testport}.History.txt"
 	fi
 
-	# 检测ip.zip文件是否存在，如果存在就删除
-	if [ -f "ip.zip" ]; then
-	  rm -f ip.zip
+	# 检测ip-${testport}.zip文件是否存在，如果存在就删除
+	if [ -f "ip-${testport}.zip" ]; then
+	  rm -f ip-${testport}.zip
 	fi
 
-	# 将当前目录下的ip文件夹内的所有文件打包成ip.zip
+	# 将当前目录下的ip文件夹内的所有文件打包成ip-${testport}.zip
 	if [ -d "ip" ]; then
-	  zip -r ip.zip ip/*
-	  log "CloudFlareIPScan Packaging ip.zip Completed!"
+	  zip -r ip-${testport}.zip ip/*
+	  log "CloudFlareIPScan Packaging ip-${testport}.zip Completed!"
 	else
 	  log "CloudFlareIPScan Completed!"
 	fi
