@@ -9,14 +9,17 @@ git clone "https://ghproxy.com/https://github.com/cmliu/CFIPS.git" && cd CFIPS &
 
 后台运行,日志going.txt
 ``` bash
+#默认测试443端口
 nohup ./go.sh > going.txt 2>&1 &
+#自定义测试2096端口
+nohup ./go.sh 2096 > going.txt 2>&1 &
 ```
 
 后台运行,telegramBot推送通知
 ``` bash
-nohup ./go.sh [telegram UserId] [telegram BotToken] > going.txt 2>&1 &
+nohup ./go.sh [port] [telegram UserId] [telegram BotToken] > going.txt 2>&1 &
 #例如
-nohup ./go.sh 712345678 6123456789:ABCDEFGABCBACBA-XVSDFWERR_FDASDFWER > going.txt 2>&1 &
+nohup ./go.sh 2096 712345678 6123456789:ABCDEFGABCBACBA-XVSDFWERR_FDASDFWER > going.txt 2>&1 &
 ```
 
 ## 文件结构
