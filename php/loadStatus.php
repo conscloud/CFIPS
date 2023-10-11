@@ -44,6 +44,6 @@
 
         echo "当前状态：扫描中<br>PID：$pid<br>当前扫描端口：$port<br>当前扫描ASN：$currentASN<br>扫描进度：$scanProgress<br>";
     } else {
-        echo "当前状态：等待扫描任务<br>";
+        echo "当前状态：等待扫描任务<br>扫描进度：100%<br>";
     }
 ?>
