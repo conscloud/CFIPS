@@ -26,8 +26,12 @@
         $(document).ready(function(){
             loadStatus();
             loadLog();
-            setInterval(loadStatus, 30000);
-            setInterval(loadLog, 30000);
+            loadServerInfo();
+            loadTaskList();
+            setInterval(loadStatus, 30000);//扫描任务进度
+            setInterval(loadLog, 30000);//扫描日志
+            setInterval(loadServerInfo, 5000);//服务器状态
+            setInterval(loadTaskList, 60000);//扫描任务列表
         });
 
         function loadStatus() {
@@ -46,13 +50,26 @@
                 elem.scrollTop = elem.scrollHeight;
             });
         }
+
+        function loadServerInfo() {
+            $("#serverInfo").load('loadServerInfo.php');
+        }
+		
+		function loadTaskList() {
+            $("#taskList").load('loadTaskList.php');
+        }
     </script>
 </head>
 <body>
     <h1>CloudFlareIPScan</h1>
+    <div id="serverInfo"></div>
+	<br>
     <div id="status"></div>
 	<br>
+	扫描日志：
     <div id="scanLog"></div>
 	<div id="progressBar"><div></div></div>
+	<br>
+	<div id="taskList"></div>
 </body>
 </html>
