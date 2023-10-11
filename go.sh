@@ -6,12 +6,13 @@ proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要�
 telegramBotUserId="" # telegram UserId
 telegramBotToken="" #telegram BotToken
 telegramBotAPI="api.telegram.org" #telegram 推送API,留空将启用官方API接口:api.telegram.org
+TGDetailedmessage=1 #是否推送所有结果,0只推送扫描结束时的汇总报告
 testport=443 #测试端口
 ###############################################################以下脚本内容，勿动#######################################################################
 mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
 # 计算系数，向上取整
 coeff=$(awk -v mem="$mem" -v perf="$perf" 'BEGIN { coeff=int((mem + 511) * perf / 512); if ((mem + 511) * perf % 512 > 0) coeff++; print coeff }')
-Threads=$((coeff * 256)) # 端口扫描线程数
+Threads=$((coeff * 384)) # 端口扫描线程数
 lines_per_batch=$((coeff * 3)) # 每次读取ip段的行数,避免机器内存不足数据溢出
 if [ $coeff -eq 1 ]; then
     TestUnit=512
@@ -240,7 +241,10 @@ if [ -d "$asnfolder" ]; then
 		ASNtgtext0="$ASNtgtext0$ASNtgtext"
 	done
 
-	TGmessage "CloudFlareIPScan：扫描任务已启动！%0A本次扫描任务列表：%0A$ASNtgtext0"
+	if [ "$TGDetailedmessage" -eq 1 ]; then
+	    TGmessage "CloudFlareIPScan：扫描任务已启动！%0A本次扫描任务列表：%0A$ASNtgtext0"
+	fi
+	
 	StartTime0=$(date "+%s")  # 获取开始时间的Unix时间戳
 	nohup ./PMD.sh > /dev/null 2>&1 & # 启动防假死脚本
  
@@ -321,13 +325,17 @@ if [ -d "$asnfolder" ]; then
 		if [ "$asnname" = "CloudFlareIP.History" ]; then
 		    asnname="CloudFlareIP.历史记录"
 		fi
-  
+
+		if [ "$TGDetailedmessage" -eq 1 ]; then
 		TGmessage "CloudFlareIPScan：扫描完成！
 		ASN：$asnname
 		IPs：$IPs
 		Valid IP：$ip_line_count
 		Port：$testport
 		Exec time：$Hours时$Minutes分$Seconds秒"
+		fi
+  
+
     done
   else
     log "There is no txt file in the ASN folder."
