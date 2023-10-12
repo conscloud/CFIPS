@@ -4,7 +4,7 @@
 
 测试运行环境ubuntu-18.04-standard_18.04.1-1_amd64
 ``` bash
-git clone "https://ghproxy.com/https://github.com/cmliu/CFIPS.git" && cd CFIPS && chmod +x go.sh PMD.sh process_ip.py TestCloudFlareIP.py Pscan
+git clone "https://ghproxy.com/https://github.com/cmliu/CFIPS.git" && cd CFIPS && chmod +x CronJob.sh go.sh PMD.sh process_ip.py TestCloudFlareIP.py Pscan
 ```
 
 后台运行,日志going.txt
@@ -28,6 +28,7 @@ nohup ./go.sh 2096 712345678 6123456789:ABCDEFGABCBACBA-XVSDFWERR_FDASDFWER > go
 CFIPS
  ├─ ASN.zip             #AS库备份
  ├─ CloudFlareIP.txt    #扫描结果 汇总
+ ├─ CronJob.sh          #定时启动这个脚本,将会自动对已扫过的端口IP库进行自动扫描并维护,定时任务如果需要TG推送请手动修改go.sh脚本内的telegramBotUserId和telegramBotToken
  ├─ go.sh               #脚本主体
  ├─ going.txt           #按上述运行方式会产生going.txt日志文件
  ├─ ip.txt              #单次扫描IP段产生的临时文件
@@ -46,6 +47,10 @@ CFIPS
  │   ├─ AS31898.txt
  │  ...
  │   └─ AS45102.txt
+ ├─ php                 #一个简陋的前端,显示实时状态信息
+ │   ├─ index.php
+ │  ...
+ │   
  ├─ ip                  #扫描结果 按地区整理存放
  │   ├─ HK-443.txt
  │   ├─ SG-443.txt
