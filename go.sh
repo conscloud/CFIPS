@@ -1,7 +1,6 @@
 #!/bin/bash
 export LANG=zh_CN.UTF-8
 perf=1 # 机器性能倍率，爆内存就调低，跑不满机器就调高，默认1
-DetailedLog=1 # 打开详细日志设为1
 proxygithub="https://ghproxy.com/" #反代github加速地址，如果不需要可以将引号内容删除，如需修改请确保/结尾 例如"https://ghproxy.com/"
 telegramBotUserId="" # telegram UserId
 telegramBotToken="" #telegram BotToken
@@ -9,6 +8,7 @@ telegramBotAPI="api.telegram.org" #telegram 推送API,留空将启用官方API�
 TGDetailedmessage=1 #是否推送所有结果,0只推送扫描结束时的汇总报告
 testport=443 #测试端口
 ###############################################################以下脚本内容，勿动#######################################################################
+DetailedLog=1 # 打开详细日志设为1 ,启动简易前端必须开启
 mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
 # 计算系数，向上取整
 coeff=$(awk -v mem="$mem" -v perf="$perf" 'BEGIN { coeff=int((mem + 511) * perf / 512); if ((mem + 511) * perf % 512 > 0) coeff++; print coeff }')
