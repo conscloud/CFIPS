@@ -77,6 +77,17 @@ apt_install curl
 apt_install zip
 apt_install jq
 
+if ! python -c "import requests" &> /dev/null; then
+    echo "'requests'模块未安装，正在尝试安装..."
+    pip install requests
+    if [ $? -eq 0 ]; then
+        echo "'requests'模块已成功安装。"
+    else
+        echo "安装'requests'模块失败，请检查你的pip安装和网络连接。"
+        exit 1
+    fi
+fi
+
 TGmessage(){
 if [ -z "$telegramBotAPI" ]; then
     telegramBotAPI="api.telegram.org"
