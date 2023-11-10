@@ -9,7 +9,7 @@ TGDetailedmessage=1 #是否推送所有结果,0只推送扫描结束时的汇总
 testport=443 #测试端口
 ###############################################################以下脚本内容，勿动#######################################################################
 DetailedLog=1 # 打开详细日志设为1 ,启动简易前端必须开启
-mem=$(free -m | awk 'NR==2{print $4}') # 可用内存
+mem=$(free -m | awk 'NR==2{print $7}')# 可用内存
 # 计算系数，向上取整
 coeff=$(awk -v mem="$mem" -v perf="$perf" 'BEGIN { coeff=int((mem + 511) * perf / 512); if ((mem + 511) * perf % 512 > 0) coeff++; print coeff }')
 Threads=$((coeff * 384)) # 端口扫描线程数
