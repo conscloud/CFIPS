@@ -24,6 +24,13 @@ nohup ./go.sh 2096 712345678 6123456789:ABCDEFGABCBACBA-XVSDFWERR_FDASDFWER > go
 
 演示站点 [https://log.ssrc.cf](https://log.ssrc.cf)
 
+定时任务或一键启动
+``` bash
+cd /CFIPS
+#运行前一定要cd到脚本绝对路径下
+./CronJob.sh
+```
+
 ## 文件结构
 运行脚本后会自动下载所需文件,所以推荐将脚本放在单独目录下运行
 ```
