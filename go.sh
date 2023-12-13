@@ -58,7 +58,19 @@ current_line=1
 update_gengxinzhi=0
 apt_update() {
     if [ "$update_gengxinzhi" -eq 0 ]; then
-        sudo apt update
+
+	if grep -qi "alpine" /etc/os-release; then
+		apk update
+	elif grep -qi "openwrt" /etc/os-release; then
+		opkg update
+  		#openwrt没有安装timeout
+		opkg install coreutils-timeout
+	elif grep -qi "ubuntu\|debian" /etc/os-release; then
+		sudo apt-get update
+	else
+		echo "$(uname) update"
+	fi
+ 
         update_gengxinzhi=$((update_gengxinzhi + 1))
     fi
 }
@@ -68,7 +80,20 @@ apt_install() {
     if ! command -v "$1" &> /dev/null; then
         log "$1 Not installed, start installation..."
         apt_update
-        sudo apt install "$1" -y
+        
+	if grep -qi "alpine" /etc/os-release; then
+		apk add $1
+	elif grep -qi "openwrt" /etc/os-release; then
+		opkg install $1
+	elif grep -qi "ubuntu\|debian" /etc/os-release; then
+		sudo apt-get install $1 -y
+	elif grep -qi "centos\|red hat\|fedora" /etc/os-release; then
+		sudo yum install $1 -y
+	else
+		log "未能检测出你的系统：$(uname)，请自行安装$1。"
+		exit 1
+	fi
+ 
         log "$1 The installation is complete!"
     fi
 }
