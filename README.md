@@ -15,11 +15,11 @@ nohup ./go.sh > going.txt 2>&1 &
 nohup ./go.sh 2096 > going.txt 2>&1 &
 ```
 
-后台运行,telegramBot推送通知
+后台运行,telegramBot推送通知 [@CloudFlareIPScan_bot](https://t.me/CloudFlareIPScan_bot)
 ``` bash
-nohup ./go.sh [port] [telegram UserId] [telegram BotToken] > going.txt 2>&1 &
+nohup ./go.sh [port] [telegram UserId] > going.txt 2>&1 &
 #例如
-nohup ./go.sh 2096 712345678 6123456789:ABCDEFGABCBACBA-XVSDFWERR_FDASDFWER > going.txt 2>&1 &
+nohup ./go.sh 2096 712345678 > going.txt 2>&1 &
 ```
 
 演示站点 [https://log.ssrc.cf](https://log.ssrc.cf)
